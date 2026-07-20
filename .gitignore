@@ -1,0 +1,11 @@
+## .NET build output
+bin/
+obj/
+
+## Visual Studio / VS Code
+.vs/
+*.user
+*.suo
+
+## Claude Code local settings (agent-specific, not project source)
+.claude/settings.local.json
