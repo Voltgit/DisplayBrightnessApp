@@ -28,6 +28,14 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 ArchitecturesInstallIn64BitMode=x64compatible
+; The app has no unsaved user state (it's a stateless brightness slider),
+; so it's safe to close it automatically -- without this, installing over
+; a running instance or uninstalling while it's running leaves an orphaned
+; process holding the exe locked, which the uninstaller then can't delete
+; and which keeps its tray icon alive after "uninstall" appears to finish.
+CloseApplications=force
+CloseApplicationsFilter={#MyAppExeName}
+RestartApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
