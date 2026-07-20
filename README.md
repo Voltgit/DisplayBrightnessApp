@@ -18,6 +18,12 @@ monitor, optionally sync them all together — that's the whole app.
   animation.
 - Starts automatically on login (no toggle for this — it just does).
 
+## Download
+
+Grab the latest installer from the
+[Releases](https://github.com/Voltgit/DisplayBrightnessApp/releases) page —
+it's a self-contained build, so no separate .NET install is required.
+
 ## Requirements
 
 - Windows 10 or 11.

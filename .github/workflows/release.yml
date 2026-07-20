@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to stamp on a manual test build (not used for tag-triggered releases)"
+        required: false
+        default: "0.0.0-dev"
+
+permissions:
+  contents: write
+
+jobs:
+  build-installer:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish self-contained build
+        run: >
+          dotnet publish DisplayBrightnessApp.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:Version=${{ steps.version.outputs.version }}
+          -o publish
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: cmd
+        run: '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=${{ steps.version.outputs.version }} installer\DisplayBrightnessApp.iss'
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DisplayBrightnessApp-installer-${{ steps.version.outputs.version }}
+          path: installer\Output\*.exe
+
+      - name: Create GitHub Release
+        if: github.event_name != 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer\Output\*.exe
+          generate_release_notes: true
